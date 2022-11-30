@@ -22,7 +22,7 @@ void displayPopulation(int dimension, vector<vector<int>> population, int i) {
 int main() {
     int nb_execution = 50;
     int population_size = 50;
-    int dimension = 4;
+    int dimension = 10;
     int mutate_probability = 20;
 
     vector<vector<int>> best_persons;
@@ -41,8 +41,7 @@ int main() {
         for (int j = 0; j < dimension; j++) {
             // TODO: random number not really random
             int indice = rand() % dimension;
-            int tampon;
-            tampon = person[indice];
+            int tampon = person[indice];
             person[indice] = person[j];
             person[j] = tampon;
         }
@@ -54,29 +53,30 @@ int main() {
 
     // NB ITERATIONS
     for (int n = 0; n < nb_execution; n++) {
+        // TODO: Probleme (doublon si dimension = 10)
         // Couple
-        for (int i = 0; i < population_size; i+=2) {
-            vector<int> person1 = population[i];
-            vector<int> person2 = population[i + 1];
-
-            int moved, crushed;
-            for (int j = 0; j < dimension; j++) {
-                moved = person1[j];
-                crushed = person2[j];
-
-                if (person1[j] == crushed)
-                    person1[j] = moved;
-
-                if (person2[j] == moved)
-                    person1[j] = crushed;
-
-                person1[j] = crushed;
-                person2[j] = moved;
-            }
-
-            population[i] = person1;
-            population[i + 1] = person2;
-        }
+//        for (int i = 0; i < population_size; i+=2) {
+//            vector<int> person1 = population[i];
+//            vector<int> person2 = population[i + 1];
+//
+//            int moved, crushed;
+//            for (int j = 0; j < dimension; j++) {
+//                moved = person1[j];
+//                crushed = person2[j];
+//
+//                if (person1[j] == crushed)
+//                    person1[j] = moved;
+//
+//                if (person2[j] == moved)
+//                    person1[j] = crushed;
+//
+//                person1[j] = crushed;
+//                person2[j] = moved;
+//            }
+//
+//            population[i] = person1;
+//            population[i + 1] = person2;
+//        }
 
         // Mutation
         int indice, tampon;
@@ -94,6 +94,7 @@ int main() {
         }
 
         // Evaluate
+        // TODO: Ne resoud pas pour dimension = 10
         int conflit;
         for (int i = 0; i < population_size; i++) {
             conflit = 0;
