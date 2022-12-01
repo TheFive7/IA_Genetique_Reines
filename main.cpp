@@ -1,8 +1,9 @@
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <random>
+#include <ctime>
 
 using namespace std;
 
@@ -19,13 +20,37 @@ void displayPopulation(int dimension, vector<vector<int>> population, int i) {
     cout << endl;
 }
 
+void displayPerson(int dimension, vector<int> person) {
+    cout << "[ ";
+    for (int i = 0; i < dimension; i++) {
+        cout << person[i] << ' ';
+    }
+    cout << "]" << endl;
+}
+
+int current_time_nanoseconds(){
+    struct timespec tm;
+    clock_gettime(CLOCK_REALTIME, &tm);
+    return tm.tv_nsec;
+}
+
+void verifyPerson(int dimension, const vector<int>& person) {
+    for (int i = 0; i < dimension; i++) {
+        if (count(person.begin(), person.end(), i) != 1) {
+            cout << "WARNING";
+        }
+    }
+}
+
 int main() {
-    int nb_execution = 50;
-    int population_size = 50;
-    int dimension = 4;
+    int nb_execution = 5000;
+    int population_size = 1000;
+    int dimension = 12;
     int mutate_probability = 20;
 
-    vector<vector<int>> best_persons;
+    mt19937 rng(current_time_nanoseconds());
+    uniform_int_distribution<> random(1,100);
+
     vector<vector<int>> population (population_size);
 
     // Init random population
@@ -40,7 +65,7 @@ int main() {
         // Shuffle
         for (int j = 0; j < dimension; j++) {
             // TODO: random number not really random
-            int indice = rand() % dimension;
+            int indice = random(rng) % dimension;
             int tampon;
             tampon = person[indice];
             person[indice] = person[j];
@@ -49,8 +74,11 @@ int main() {
         population[i] = person;
 
         // Display population
-        // displayPopulation(dimension, population, i);
+        displayPopulation(dimension, population, i);
     }
+
+//    cout << "AU DEPART: ";
+//    displayPerson(dimension, population[0]);
 
     // NB ITERATIONS
     for (int n = 0; n < nb_execution; n++) {
@@ -78,20 +106,26 @@ int main() {
             population[i + 1] = person2;
         }
 
+//        cout << "APRES COUPLE: ";
+//        displayPerson(dimension, population[0]);
+
         // Mutation
         int indice, tampon;
         for (int i = 0; i < population_size; i++) {
-            person = population[i];
-            if (rand() % 100 <= mutate_probability) {
-                indice = rand() % dimension;
+            vector<int> person3 = population[i];
+            if (random(rng) <= mutate_probability) {
+                indice = random(rng) % dimension;
 
-                tampon = person[indice];
-                person[indice] = person[person[indice]];
-                person[person[indice]] = tampon;
+                tampon = person3[indice];
+                person3[indice] = person3[person[indice]];
+                person3[person[indice]] = tampon;
 
-                population[i] = person;
+                population[i] = person3;
             }
         }
+
+//        cout << "APRES MUTATION: ";
+//        displayPerson(dimension, population[0]);
 
         // Evaluate
         int conflit;
@@ -99,55 +133,28 @@ int main() {
             conflit = 0;
             person = population[i];
 
-            for (int j = 0; j < dimension; j++) {
-                if (abs(j - (j + 1) % dimension) == abs(person[j] - person[(j + 1) % dimension])) {
-                    conflit++;
+            for (int j = 0; j < dimension - 1; j++) {
+                for (int k = j + 1; k < dimension; k++) {
+                    if (abs(j - k) == abs(person[j] - person[k])) {
+                        conflit++;
+                    }
                 }
             }
 
             // If it has any conflict and the person is not in the array
             if (conflit == 0) {
-                cout << "BEST: [ ";
-                for (int j = 0; j < dimension; j++) {
-                    cout << person[j] << ' ';
-                }
-                cout << ']' << endl;
+                cout << "BEST: ";
+                displayPerson(dimension, person);
                 exit(5);
-
-/*                // Add only if person is not yet in the array best_person
-                if (best_persons.empty()) {
-                    best_persons.push_back(person);
-                } else {
-                    bool same;
-                    for (auto & best_person : best_persons) {
-                        same = false;
-                        for (int k = 0; k < dimension; k++) {
-                            if (person[k] == best_person[k])
-                                same = true;
-                        }
-                        if (!same) {
-                            cout << "BEST: [ ";
-                            for (int j = 0; j < dimension; j++) {
-                                cout << person[j] << ' ';
-                            }
-                            cout << ']' << endl;
-
-                            best_persons.push_back(person);
-                        }
-                    }
-                }*/
             }
         }
 
-/*        // Print best persons
-        for (auto & best_person : best_persons) {
-            cout << "TAB: ";
-            for (int k = 0; k < dimension; k++) {
-                cout << best_person[k] << ' ';
-            }
-            cout << endl;
+        // Verify
+        for (int i = 0; i < population_size; i++) {
+            verifyPerson(dimension, population[i]);
         }
 
-        cout << best_persons.size() << endl;*/
+        // Shuffle the population
+        shuffle(begin(population), end(population), rng);
     }
 }
