@@ -150,9 +150,9 @@ int main() {
         }
 
         // Verify
-        for (int i = 0; i < population_size; i++) {
-            verifyPerson(dimension, population[i]);
-        }
+//        for (int i = 0; i < population_size; i++) {
+//            verifyPerson(dimension, population[i]);
+//        }
 
         // Shuffle the population
         shuffle(begin(population), end(population), rng);
