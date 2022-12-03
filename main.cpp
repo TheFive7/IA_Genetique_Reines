@@ -93,31 +93,34 @@ vector<vector<int>> initPopulation(int dimension, vector<int> person, vector<vec
  * @param dimension : Dimension
  * @param person : The person
  * @param population : Population
+ * @param couple_probability : Probability of couple
  * @return : The new array with the created children by their respective parent
  */
-vector<vector<int>> couple(int dimension, vector<int> person, vector<vector<int>> population) {
+vector<vector<int>> couple(int dimension, vector<int> person, vector<vector<int>> population, int couple_probability) {
     for (int i = 0; i < population.size(); i+=2) {
-        vector<int> person1 = population[i];
-        vector<int> person2 = population[i + 1];
+        if (random(rng) <= couple_probability) {
+            vector<int> person1 = population[i];
+            vector<int> person2 = population[i + 1];
 
-        // Method to couple
-        int moved, crushed;
-        for (int j = 0; j < dimension; j++) {
-            moved = person1[j];
-            crushed = person2[j];
+            // Method to couple
+            int moved, crushed;
+            for (int j = 0; j < dimension; j++) {
+                moved = person1[j];
+                crushed = person2[j];
 
-            if (person1[j] == crushed)
-                person1[j] = moved;
+                if (person1[j] == crushed)
+                    person1[j] = moved;
 
-            if (person2[j] == moved)
+                if (person2[j] == moved)
+                    person1[j] = crushed;
+
                 person1[j] = crushed;
+                person2[j] = moved;
+            }
 
-            person1[j] = crushed;
-            person2[j] = moved;
+            population[i] = person1;
+            population[i + 1] = person2;
         }
-
-        population[i] = person1;
-        population[i + 1] = person2;
     }
     return population;
 }
@@ -180,10 +183,11 @@ vector<vector<int>> evaluate(int dimension, vector<int> person, vector<vector<in
 }
 
 int main() {
-    int nb_execution = 5000;
+    int nb_execution = 10000;
     int population_size = 10;
     int dimension = 8;
-    int mutate_probability = 80;
+    int mutate_probability = 10;
+    int couple_probability = 30;
 
     vector<int> person (dimension);
     vector<vector<int>> population (population_size);
@@ -197,7 +201,7 @@ int main() {
     // NB ITERATIONS
     for (int n = 0; n < nb_execution; n++) {
         // Couple
-        population = couple(dimension, person, population);
+        population = couple(dimension, person, population, couple_probability);
 
         cout << "APRES COUPLE  : ";
         displayPerson(dimension, population[0]);
