@@ -1,3 +1,14 @@
+/**
+ * Project realised by HENNEQUIN Maxime
+ * December 2022 & January 2023
+ *
+ * Checkers algorithm with parallel processing
+ */
+
+// COMPIL & RUN
+// !mpicxx -o reine -fopenmp reine.cxx
+// !mpirun --allow-run-as-root -np 3 ./reine
+
 #include <mpi.h>
 #include <cstdlib>
 #include <iostream>
@@ -8,18 +19,6 @@
 #include <ctime>
 
 using namespace std;
-
-// COMPIL & RUN
-// !mpicxx -o reine -fopenmp reine.cxx
-// !mpirun --allow-run-as-root -np 3 ./reine
-
-/**
- * Project realised by HENNEQUIN Maxime
- * December 2022 & January 2023
- *
- * Checkers algorithm with parallel processing
- */
-
 
 // RANDOM
 int current_time_nanoseconds(){
@@ -165,35 +164,44 @@ vector<vector<int>> mutatePopulation(int dimension, vector<int> person, vector<v
 }
 
 /**
- * Evaluate the population, if it detect the best person, it exit the program and display the best
+ * Evaluate a person and return its conflict.
  * @param dimension : Dimension
  * @param person : The person
+ * @param conflict : The number of conflict
+ * @return : Conflict
+ */
+int evaluatePerson(int dimension, vector<int> person, int conflict) {
+    conflict = 0;
+    for (int j = 0; j < dimension - 1; j++) {
+        for (int k = j + 1; k < dimension; k++) {
+            if (abs(j - k) == abs(person[j] - person[k])) {
+                conflict++;
+            }
+        }
+    }
+    return conflict;
+}
+
+/**
+ * Evaluate the population, if it detect the best person, it exit the program and display the best
+ * @param dimension : Dimension
  * @param population : Population
  * @param nb_execution : The number of execution
  * @return : The population
  */
-vector<vector<int>> evaluate(int dimension, vector<int> person, vector<vector<int>> population, int nb_execution) {
-    int conflit;
-    for (auto & i : population) {
-        conflit = 0;
-        person = i;
-
-        for (int j = 0; j < dimension - 1; j++) {
-            for (int k = j + 1; k < dimension; k++) {
-                if (abs(j - k) == abs(person[j] - person[k])) {
-                    conflit++;
-                }
-            }
-        }
+vector<vector<int>> evaluatePopulation(int dimension, vector<vector<int>> population, int nb_execution) {
+    int conflict;
+    for (auto &p : population) {
+        conflict = evaluatePerson(dimension, p, conflict);
 
         // If it has any conflict and the person is not in the array
-        if (conflit == 0) {
+        if (conflict == 0) {
             cout << "\n     BEST     : ";
-            displayPerson(dimension, person);
+            displayPerson(dimension, p);
 
             // When a process find the best solution, it send a message to stop all process and exit the program
             MPI_Abort(MPI_COMM_WORLD, nb_execution);
-            
+
             exit(nb_execution);
         }
     }
@@ -241,7 +249,7 @@ int main(int argc ,char *argv[]) {
         // displayPerson(dimension, population[0]);
 
         // Evaluate
-        population = evaluate(dimension, person, population, n);
+        population = evaluatePopulation(dimension, population, n);
 
         // cout << "AFTER EVAL    : ";
         // displayPerson(dimension, population[0]);
@@ -254,34 +262,26 @@ int main(int argc ,char *argv[]) {
         // SELECTION, MPI SEND AND RECV
         if (n % send_at_iteration == 0) {
             vector<vector<int>> selection (send_nb_person); // Tab of person to send
-            vector<vector<int>> conflit_at_indice (population.size()); // [[conflit, indice], ...]
-            int conflit;
+            vector<vector<int>> conflict_at_indice (population.size()); // [[conflict, indice], ...]
+            int conflict;
 
             // Calculate the conflict of each person
             for (int i = 0; i < population.size(); i++) {
-                conflit = 0;
-                person = population[i];
-                for (int j = 0; j < dimension - 1; j++) {
-                    for (int k = j + 1; k < dimension; k++) {
-                        if (abs(j - k) == abs(person[j] - person[k])) {
-                            conflit ++;
-                        }
-                    }
-                }
-                conflit_at_indice[i] = { conflit, i };
+                conflict = evaluatePerson(dimension, population[i], conflict);
+                conflict_at_indice[i] = { conflict, i };
             }
 
             // Sort the values to have the best in first
-            sort(conflit_at_indice.begin(),conflit_at_indice.end());
+            sort(conflict_at_indice.begin(),conflict_at_indice.end());
 
             // Send person to next process (and receive from previous process)
             for (int i = 0; i < send_nb_person; i++) {
-                selection[i] = population[conflit_at_indice[i][1]];
+                selection[i] = population[conflict_at_indice[i][1]];
 
                 MPI_Send (&selection[i][0], dimension, MPI_INT, (myrank + 1) % numprocs, tag, MPI_COMM_WORLD);
                 MPI_Recv (&selection[i][0], dimension, MPI_INT, (myrank + (numprocs - 1)) % numprocs, tag, MPI_COMM_WORLD, &status);
 
-                population[conflit_at_indice[i][1]] = selection[i];
+                population[conflict_at_indice[i][1]] = selection[i];
             }
         }
 

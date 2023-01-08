@@ -95,7 +95,7 @@ vector<vector<int>> initPopulation(int dimension, vector<int> person, vector<vec
  * @param couple_probability : Probability of couple
  * @return : The new array with the created children by their respective parent
  */
-vector<vector<int>> couple(int dimension, vector<vector<int>> population, int couple_probability) {
+vector<vector<int>> couplePopulation(int dimension, vector<vector<int>> population, int couple_probability) {
     for (int i = 0; i < population.size(); i+=2) {
         if (randomNumber(rng) <= couple_probability) {
             vector<int> person1 = population[i];
@@ -134,8 +134,8 @@ vector<vector<int>> couple(int dimension, vector<vector<int>> population, int co
  */
 vector<vector<int>> mutatePopulation(int dimension, vector<int> person, vector<vector<int>> population, int mutate_probability) {
     int indice, tampon;
-    for (auto & i : population) {
-        vector<int> newPerson = i;
+    for (auto &p : population) {
+        vector<int> newPerson = p;
         if (randomNumber(rng) <= mutate_probability) {
             indice = randomNumber(rng) % dimension;
 
@@ -143,38 +143,47 @@ vector<vector<int>> mutatePopulation(int dimension, vector<int> person, vector<v
             newPerson[indice] = newPerson[person[indice]];
             newPerson[person[indice]] = tampon;
 
-            i = newPerson;
+            p = newPerson;
         }
     }
     return population;
 }
 
 /**
- * Evaluate the population, if it detect the best person, it exit the program and display the best
+ * Evaluate a person and return its conflict.
  * @param dimension : Dimension
  * @param person : The person
+ * @param conflict : The number of conflict
+ * @return : Conflict
+ */
+int evaluatePerson(int dimension, vector<int> person, int conflict) {
+    conflict = 0;
+    for (int j = 0; j < dimension - 1; j++) {
+        for (int k = j + 1; k < dimension; k++) {
+            if (abs(j - k) == abs(person[j] - person[k])) {
+                conflict++;
+            }
+        }
+    }
+    return conflict;
+}
+
+/**
+ * Evaluate the population, if it detect the best person, it exit the program and display the best
+ * @param dimension : Dimension
  * @param population : Population
  * @param nb_execution : The number of execution
  * @return : The population
  */
-vector<vector<int>> evaluate(int dimension, vector<int> person, vector<vector<int>> population, int nb_execution) {
-    int conflit;
-    for (auto & i : population) {
-        conflit = 0;
-        person = i;
-
-        for (int j = 0; j < dimension - 1; j++) {
-            for (int k = j + 1; k < dimension; k++) {
-                if (abs(j - k) == abs(person[j] - person[k])) {
-                    conflit++;
-                }
-            }
-        }
+vector<vector<int>> evaluatePopulation(int dimension, vector<vector<int>> population, int nb_execution) {
+    int conflict;
+    for (auto &p : population) {
+        conflict = evaluatePerson(dimension, p, conflict);
 
         // If it has any conflict and the person is not in the array
-        if (conflit == 0) {
+        if (conflict == 0) {
             cout << "\n     BEST     : ";
-            displayPerson(dimension, person);
+            displayPerson(dimension, p);
             exit(nb_execution);
         }
     }
@@ -186,7 +195,7 @@ int main() {
     int population_size = 10;
     int mutate_probability = 10;
     int couple_probability = 30;
-    int dimension = 5;
+    int dimension = 8;
 
     vector<int> person (dimension);
     vector<vector<int>> population (population_size);
@@ -200,7 +209,7 @@ int main() {
     // NB ITERATIONS
     for (int n = 0; n < nb_execution; n++) {
         // Couple
-        population = couple(dimension, population, couple_probability);
+        population = couplePopulation(dimension, population, couple_probability);
 
         cout << "APRES COUPLE  : ";
         displayPerson(dimension, population[0]);
@@ -212,7 +221,7 @@ int main() {
         displayPerson(dimension, population[0]);
 
         // Evaluate
-        population = evaluate(dimension, person, population, n);
+        population = evaluatePopulation(dimension, population, n);
 
         // Verify
 //        for (int i = 0; i < population_size; i++) {
