@@ -102,17 +102,49 @@ vector<vector<int>> initPopulation(int dimension, vector<int> person, vector<vec
 }
 
 /**
+ * Evaluate a person and return its conflict.
+ * @param dimension : Dimension
+ * @param person : The person
+ * @param conflict : The number of conflict
+ * @return : Conflict
+ */
+int evaluatePerson(int dimension, vector<int> person, int conflict) {
+    conflict = 0;
+    for (int j = 0; j < dimension - 1; j++) {
+        for (int k = j + 1; k < dimension; k++) {
+            if (abs(j - k) == abs(person[j] - person[k])) {
+                conflict++;
+            }
+        }
+    }
+    return conflict;
+}
+
+/**
  * Couple 2 persons to create 2 children, a mix between their parent, then kill the two parent
+ * This method couple the best together and the other together
  * @param dimension : Dimension
  * @param population : Population
  * @param couple_probability : Probability of couple
  * @return : The new array with the created children by their respective parent
  */
-vector<vector<int>> couple(int dimension, vector<vector<int>> population, int couple_probability) {
+vector<vector<int>> couplePopulation(int dimension, vector<vector<int>> population, int couple_probability) {
+    vector<vector<int>> conflict_at_indice (population.size()); // [[conflict, indice], ...]
+    int conflict;
+
+    // Calculate the conflict of each person
+    for (int i = 0; i < population.size(); i++) {
+        conflict = evaluatePerson(dimension, population[i], conflict);
+        conflict_at_indice[i] = { conflict, i };
+    }
+
+    // Sort the values to have the best in first
+    sort(conflict_at_indice.begin(),conflict_at_indice.end());
+
     for (int i = 0; i < population.size(); i+=2) {
         if (randomNumber(rng) <= couple_probability) {
-            vector<int> person1 = population[i];
-            vector<int> person2 = population[i + 1];
+            vector<int> person1 = population[conflict_at_indice[i][1]];
+            vector<int> person2 = population[conflict_at_indice[i + 1][1]];
 
             // Method to couple
             int moved, crushed;
@@ -134,7 +166,6 @@ vector<vector<int>> couple(int dimension, vector<vector<int>> population, int co
             population[i + 1] = person2;
         }
     }
-
     return population;
 }
 
@@ -161,25 +192,6 @@ vector<vector<int>> mutatePopulation(int dimension, vector<int> person, vector<v
         }
     }
     return population;
-}
-
-/**
- * Evaluate a person and return its conflict.
- * @param dimension : Dimension
- * @param person : The person
- * @param conflict : The number of conflict
- * @return : Conflict
- */
-int evaluatePerson(int dimension, vector<int> person, int conflict) {
-    conflict = 0;
-    for (int j = 0; j < dimension - 1; j++) {
-        for (int k = j + 1; k < dimension; k++) {
-            if (abs(j - k) == abs(person[j] - person[k])) {
-                conflict++;
-            }
-        }
-    }
-    return conflict;
 }
 
 /**
