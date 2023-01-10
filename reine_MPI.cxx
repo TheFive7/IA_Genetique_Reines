@@ -2,17 +2,6 @@
  * Project realised by HENNEQUIN Maxime
  * December 2022 & January 2023
  * GitHub: https://github.com/TheFive7/IA_Genetique_Reines
- *
- * Checkers algorithm with parallel processing
- *
- * To code with MPI: Google colab
- * https://colab.research.google.com/
- *
- * Compilation
- * !mpicxx -o reine_MPI -fopenmp reine_MPI.cxx
- *
- * Run with 3 process
- * !mpirun --allow-run-as-root -np 3 ./reine_MPI
  */
 
 #include <mpi.h>
@@ -219,7 +208,7 @@ vector<vector<int>> evaluatePopulation(int dimension, vector<vector<int>> popula
             // When a process find the best solution, it send a message to stop all process and exit the program
             MPI_Abort(MPI_COMM_WORLD, nb_execution);
             exit(nb_execution);
-        }
+        }Rendu du code
     }
     return population;
 }

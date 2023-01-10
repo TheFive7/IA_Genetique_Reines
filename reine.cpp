@@ -1,3 +1,9 @@
+/**
+ * Project realised by HENNEQUIN Maxime
+ * December 2022 & January 2023
+ * GitHub: https://github.com/TheFive7/IA_Genetique_Reines
+ */
+
 #include <iostream>
 #include <string>
 #include <vector>
