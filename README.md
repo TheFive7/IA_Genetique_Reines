@@ -11,8 +11,6 @@ A problem where we must place n queens on a n * n chessboard with a lot of rule 
 * algo_reine.png: Image of subject
 * couple_mutation.png: Explanation of couple and mutation
 *
-*
-*
 * Queens puzzle with parallel processing
 * https://en.wikipedia.org/wiki/Eight_queens_puzzle
 *
