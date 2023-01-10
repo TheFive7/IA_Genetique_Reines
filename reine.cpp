@@ -19,20 +19,6 @@ uniform_int_distribution<> randomNumber(1,100);
 
 
 /**
- * Display the population
- * @param dimension : Dimension of the person
- * @param population : The Population
- */
-void displayPopulation(int dimension, vector<vector<int>> population) {
-    for (auto & i : population) {
-        for (int k = 0; k < dimension; k++) {
-            cout << i[k] << ' ';
-        }
-        cout << endl;
-    }
-}
-
-/**
  * Display a person
  * @param dimension : Dimension of a person
  * @param person : The person
@@ -46,7 +32,20 @@ void displayPerson(int dimension, vector<int> person) {
 }
 
 /**
+ * Display the population
+ * [Usefull if we want to display all the population easily]
+ * @param dimension : Dimension of the person
+ * @param population : The Population
+ */
+void displayPopulation(int dimension, const vector<vector<int>>& population) {
+    for (auto & i : population) {
+        displayPerson(dimension, i);
+    }
+}
+
+/**
  * Check if a person contain one a each value
+ * [Used at the beginning to be sure that each person is correct]
  * @param dimension : Dimension
  * @param person : The person
  */
@@ -195,9 +194,10 @@ vector<vector<int>> evaluatePopulation(int dimension, vector<vector<int>> popula
 
         // If it has any conflict and the person is not in the array
         if (conflict == 0) {
-            cout << "\n     BEST     : ";
+            cout << "\nFound the best: ";
             displayPerson(dimension, p);
-            exit(nb_execution);
+            cout << "\nFounded in " << nb_execution << " iteration. \n";
+            exit(0);
         }
     }
     return population;
@@ -207,39 +207,29 @@ int main() {
     int nb_execution = 100000;
     int population_size = 30;
     int mutate_probability = 10;
-    int couple_probability = 50;
-    int dimension = 13;
+    int couple_probability = 30;
+    int dimension = 15;
 
-    vector<int> person (dimension);
-    vector<vector<int>> population (population_size);
+    vector<int> person (dimension); // Tab of a person
+    vector<vector<int>> population (population_size); // Tab of all person (the population)
+
+    cout << "Launch with dimension " << dimension << ".\n";
 
     // Init random population
     population = initPopulation(dimension, person, population);
 
-    cout << "AU DEPART: ";
-    displayPerson(dimension, population[0]);
+    // displayPopulation(dimension, population);
 
-    // NB ITERATIONS
+    // Number of iterations
     for (int n = 0; n < nb_execution; n++) {
         // Couple
         population = couplePopulation(dimension, population, couple_probability);
 
-//        cout << "APRES COUPLE  : ";
-//        displayPerson(dimension, population[0]);
-
         // Mutation
         population = mutatePopulation(dimension, person, population, mutate_probability);
 
-//        cout << "APRES MUTATION: ";
-//        displayPerson(dimension, population[0]);
-
         // Evaluate
         population = evaluatePopulation(dimension, population, n);
-
-        // Verify
-//        for (int i = 0; i < population_size; i++) {
-//            checkPerson(dimension, population[i]);
-//        }
 
         // Shuffle the population
         shuffle(begin(population), end(population), rng);
