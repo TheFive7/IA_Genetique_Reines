@@ -17,21 +17,6 @@ int current_time_nanoseconds(){
 mt19937 rng(current_time_nanoseconds());
 uniform_int_distribution<> randomNumber(1,100);
 
-
-/**
- * Display the population
- * @param dimension : Dimension of the person
- * @param population : The Population
- */
-void displayPopulation(int dimension, vector<vector<int>> population) {
-    for (auto & i : population) {
-        for (int k = 0; k < dimension; k++) {
-            cout << i[k] << ' ';
-        }
-        cout << endl;
-    }
-}
-
 /**
  * Display a person
  * @param dimension : Dimension of a person
@@ -43,6 +28,20 @@ void displayPerson(int dimension, vector<int> person) {
         cout << person[i] << ' ';
     }
     cout << "]" << endl;
+}
+
+/**
+ * Display the population
+ * @param dimension : Dimension of the person
+ * @param population : The Population
+ */
+void displayPopulation(int dimension, vector<vector<int>> population) {
+    for (auto & i : population) {
+        for (int k = 0; k < dimension; k++) {
+            displayPerson(dimension, population[k]);
+        }
+        cout << endl;
+    }
 }
 
 /**
@@ -218,6 +217,8 @@ int main() {
 
     cout << "AU DEPART: ";
     displayPerson(dimension, population[0]);
+
+    displayPopulation(dimension, population);
 
     // NB ITERATIONS
     for (int n = 0; n < nb_execution; n++) {

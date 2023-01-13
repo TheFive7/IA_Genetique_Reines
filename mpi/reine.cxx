@@ -249,7 +249,7 @@ int main(int argc ,char *argv[]) {
     // Number of iterations
     for (int n = 0; n < nb_execution; n++) {
         // Couple
-        population = couple(dimension, population, couple_probability);
+        population = couplePopulation(dimension, population, couple_probability);
 
         // cout << "AFTER COUPLE  : ";
         // displayPerson(dimension, population[0]);
